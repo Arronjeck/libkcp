@@ -80,9 +80,9 @@ UDPSession *UDPSession::createSession( int sockfd ) {
 	ioctl_setting set = state ? 1 : 0;
 	ioctlsocket( sockfd, FIONBIO, &set );
 #else
-	const auto flags = fcntl( sock, F_GETFL, 0 );
+	const auto flags = fcntl( sockfd, F_GETFL, 0 );
 	const auto newflags = state ? flags | O_NONBLOCK : flags ^ O_NONBLOCK;
-	fcntl( sock, F_SETFL, newflags );
+	fcntl( sockfd, F_SETFL, newflags );
 #endif
 
 	UDPSession *sess = new ( UDPSession );
@@ -97,7 +97,11 @@ void UDPSession::Update( uint32_t current ) noexcept {
 	for ( ;; ) {
 		;
 		int n = recv( m_sockfd, ( char * )m_buf, sizeof( m_buf ), 0 );
+#ifdef _WIN32
 		if ( n != SOCKET_ERROR ) {
+#else
+		if ( n > 0 ) {
+#endif //_win32
 			if ( fec.isEnabled() ) {
 				// decode FEC packet
 				auto pkt = fec.Decode( m_buf, static_cast<size_t>( n ) );

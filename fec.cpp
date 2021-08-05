@@ -9,6 +9,7 @@
 #include "fec.h"
 #include "sess.h"
 #include "encoding.h"
+#include "cominclude.h"
 
 FEC::FEC( ReedSolomon enc ) : enc( enc ) {}
 

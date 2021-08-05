@@ -46,7 +46,6 @@ static inline int gettimeofday( struct timeval
 }
 
 static inline void itimeofday( long *sec, long *usec ) {
-#ifdef _WIN32
 	static long mode = 0, addsec = 0;
 	BOOL retval;
 	static IINT64 freq = 1;
@@ -67,16 +66,6 @@ static inline void itimeofday( long *sec, long *usec ) {
 	if ( usec ) {
 		*usec = ( long )( ( qpc % freq ) * 1000000 / freq );
 	}
-#else
-	struct timeval time;
-	gettimeofday( &time, NULL );
-	if ( sec ) {
-		*sec = time.tv_sec;
-	}
-	if ( usec ) {
-		*usec = time.tv_usec;
-	}
-#endif //_WIN32
 }
 
 static inline void usleep( int iMilliSec )
@@ -188,6 +177,16 @@ static WSANet instance;
 #include <sys/socket.h>
 #include <sys/fcntl.h>
 #include <arpa/inet.h>
+inline void itimeofday( long *sec, long *usec ) {
+	struct timeval time;
+	gettimeofday( &time, NULL );
+	if ( sec ) {
+		*sec = time.tv_sec;
+	}
+	if ( usec ) {
+		*usec = time.tv_usec;
+	}
+}
 #endif
 
 #endif //__KCP_CPP_H__
