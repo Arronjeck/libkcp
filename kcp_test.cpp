@@ -1,5 +1,6 @@
 #include <cstring>
 #include <iostream>
+#include <fstream>
 #include <cstdio>
 #include "sess.h"
 #include "cominclude.h"
@@ -10,8 +11,8 @@ int main() {
 	long s, u;
 	itimeofday( &s, &u );
 	srand( ( s * 1000 ) + ( u / 1000 ) );
-
-	UDPSession *sess = UDPSession::DialWithOptions( "127.0.0.1", 9999, 10, 3 );
+	//UDPSession *sess = UDPSession::DialWithOptions( "127.0.0.1", 9999, 10, 3 );
+	UDPSession *sess = UDPSession::DialWithOptions( "92.118.234.42", 9999, 10, 3 );
 	sess->NoDelay( 1, 10, 2, 1 );
 	sess->WndSize( 1024, 1024 );
 	//sess->SetMtu( 1472 );
@@ -29,22 +30,30 @@ int main() {
 	sess->Write( buf, sz );
 	auto clkBegin = clock();
 	int i = 0;
+	std::ofstream ofs("test.bin", std::fstream::binary);
 	while ( true ) {
 		sess->Update( iclock() );
 		memset( buf, 0, nbuf );
 		int n = sess->Read( buf, nbuf );
 		if ( n > 0 ) {
-			ntotal += n;
+			ntotal += n;			
 			printf( "[%d]Receive %d, Total %d\n", i, n, ntotal );
 			if ( strcmp( buf, "finish" ) == 0 ) {
 				break;
 			}
+			else{
+				ofs.write(buf, n);
+			}
 		}
 		i++;
 	}
+	ofs.close();
 	auto clkEnd = clock();
 	std::cout << "Cost Time " << clkEnd - clkBegin << " ms" << std::endl;
 	UDPSession::Destroy( sess );
+
+	getchar();
+	return 0;
 }
 
 IUINT64 iclock64( void ) {
